@@ -58,6 +58,11 @@ export default function App() {
     };
   });
 
+  const [notifiedLowStockIds, setNotifiedLowStockIds] = useState<string[]>(() => {
+    const saved = localStorage.getItem('pos_notified_low_stock_ids');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   // --- UI Layout Navigation States ---
   const [activeTab, setActiveTab] = useState<'register' | 'online' | 'notifications' | 'analytics'>('register');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -214,6 +219,45 @@ export default function App() {
       );
     }
   };
+
+  // --- Automated Low Stock Alert Engine ---
+  const productsStockKey = products.map((p) => `${p.id}:${p.stock}:${p.name}`).join(',');
+
+  useEffect(() => {
+    localStorage.setItem('pos_notified_low_stock_ids', JSON.stringify(notifiedLowStockIds));
+  }, [notifiedLowStockIds]);
+
+  useEffect(() => {
+    const newlyLowStock: string[] = [];
+    const restocked: string[] = [];
+
+    products.forEach((p) => {
+      if (p.stock < 2) {
+        if (!notifiedLowStockIds.includes(p.id)) {
+          newlyLowStock.push(p.id);
+          dispatchNotification(
+            'system',
+            '⚠️ CRITICAL INVENTORY ALERT',
+            `Product "${p.name}" has fallen below critical safety margins: ${p.stock} units left in stock!`
+          );
+        }
+      } else {
+        if (notifiedLowStockIds.includes(p.id)) {
+          restocked.push(p.id);
+        }
+      }
+    });
+
+    if (newlyLowStock.length > 0 || restocked.length > 0) {
+      setNotifiedLowStockIds((prev) => {
+        let updated = [...prev, ...newlyLowStock];
+        if (restocked.length > 0) {
+          updated = updated.filter((id) => !restocked.includes(id));
+        }
+        return updated;
+      });
+    }
+  }, [productsStockKey, notifiedLowStockIds]);
 
   // --- Checkout Operations ---
   const handleCheckout = (
@@ -718,6 +762,12 @@ export default function App() {
                 onConfigChange={setNotificationConfig}
                 onClearNotifications={() => setNotifications([])}
                 onManualTriggerSim={handleManualTriggerSim}
+                products={products}
+                onUpdateProductStock={(productId, newStock) => {
+                  setProducts((prev) =>
+                    prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
+                  );
+                }}
               />
             ) : (
               <AnalyticsPanel

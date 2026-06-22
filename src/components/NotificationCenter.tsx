@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NotificationPayload, UserRole } from '../types';
+import { NotificationPayload, UserRole, Product } from '../types';
 import { Bell, Shield, User, HeartHandshake, Eye, Volume2, Slack, Phone, Mail, Ban, Check, Trash2, Zap, AlertTriangle, AlertCircle, Sparkles, Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -21,6 +21,8 @@ interface NotificationCenterProps {
   }) => void;
   onClearNotifications: () => void;
   onManualTriggerSim: (type: 'checkout' | 'cancel') => void;
+  products: Product[];
+  onUpdateProductStock: (productId: string, newStock: number) => void;
 }
 
 export default function NotificationCenter({
@@ -31,6 +33,8 @@ export default function NotificationCenter({
   onConfigChange,
   onClearNotifications,
   onManualTriggerSim,
+  products,
+  onUpdateProductStock,
 }: NotificationCenterProps) {
   const [testMode, setTestMode] = useState(false);
 
@@ -262,6 +266,97 @@ export default function NotificationCenter({
                   Disabled
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Real-time Low Stock Auditor Panel */}
+          <div className="rounded-2xl border border-slate-150 bg-white p-5 shadow-xs space-y-4" id="low-stock-auditor-panel">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-slate-400 font-mono flex items-center justify-between">
+              <span>3. Low Stock Watcher</span>
+              <span className="text-[10px] text-indigo-600 font-sans font-bold">Limit: &lt; 2 units</span>
+            </h3>
+
+            {/* Low stock statistics */}
+            {products.filter((p) => p.stock < 2).length === 0 ? (
+              <div className="rounded-xl bg-emerald-50/40 border border-emerald-100 p-3.5 text-center space-y-1.5">
+                <Check className="h-5 w-5 text-emerald-600 mx-auto" />
+                <p className="text-xs font-bold text-emerald-800">All Stock Decent</p>
+                <p className="text-[10px] text-emerald-600">All catalog items have &ge; 2 safety units in reserve.</p>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-amber-50/40 border border-amber-100 p-3.5 space-y-2">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                  <p className="text-xs font-bold text-amber-800">
+                    {products.filter((p) => p.stock < 2).length} Item(s) Running Low
+                  </p>
+                </div>
+                <p className="text-[10px] text-amber-600 leading-relaxed">
+                  System alerts automatically dispatched when quantities fall below 2 units in stock.
+                </p>
+              </div>
+            )}
+
+            {/* List of low stock products or sandbox simulation */}
+            <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+              {products.map((p) => {
+                const isLow = p.stock < 2;
+                return (
+                  <div
+                    key={p.id}
+                    className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                      isLow
+                        ? 'border-red-200 bg-red-50/10 shadow-3xs'
+                        : 'border-slate-100 bg-slate-50/30'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className={`text-xs font-bold truncate ${isLow ? 'text-red-950 font-sans font-black' : 'text-slate-700'}`}>
+                        {p.name}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[9px] font-mono text-slate-400">Stock:</span>
+                        <span
+                          className={`text-[10px] font-mono font-black px-1.5 py-0.2 rounded-md ${
+                            isLow
+                              ? 'bg-red-100 text-red-700'
+                              : p.stock === 2
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-slate-150 text-slate-600'
+                          }`}
+                        >
+                          {p.stock}
+                        </span>
+                        {isLow && (
+                          <span className="text-[8px] bg-red-650 border border-red-500 text-white font-extrabold px-1 rounded uppercase scale-95 shrink-0">
+                            Alarm
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex gap-1">
+                      {isLow ? (
+                        <button
+                          onClick={() => onUpdateProductStock(p.id, 10)}
+                          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 transition-colors text-white font-extrabold text-[9px] uppercase rounded-lg shadow-3xs cursor-pointer"
+                          title="Restock units back to safety"
+                        >
+                          Restock (10)
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => onUpdateProductStock(p.id, 1)}
+                          className="px-2 py-1 bg-orange-100 border border-orange-200 hover:bg-orange-200 transition-colors text-orange-850 font-semibold text-[9px] uppercase rounded-lg cursor-pointer"
+                          title="Simulate stock decrement to trigger alert"
+                        >
+                          Simulate Low
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
