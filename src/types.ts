@@ -81,6 +81,14 @@ export interface NotificationPayload {
 
 export type UserRole = 'Admin' | 'Cashier' | 'Other';
 
+export interface Shift {
+  id: string;
+  userRole: UserRole;
+  startTime: string; // ISO string
+  endTime?: string;  // ISO string, present if completed
+  hoursWorked?: number; // total hours as floating-point number
+}
+
 export interface OnlineOrder {
   id: string;
   orderNo: string | number;

@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
-import { Order, Product } from '../types';
-import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download } from 'lucide-react';
+import { Order, Product, Shift, UserRole } from '../types';
+import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download, CalendarDays } from 'lucide-react';
 import { motion } from 'motion/react';
+import StaffTimeClock from './StaffTimeClock';
 
 interface AnalyticsPanelProps {
   orders: Order[];
   onRefund: (orderId: string) => void;
   onViewReceipt: (order: Order) => void;
   products: Product[];
+  shifts: Shift[];
+  currentRole: UserRole;
+  onClockIn: (role: UserRole) => void;
+  onClockOut: () => void;
+  onClearShifts: () => void;
+  onDeleteShift: (id: string) => void;
 }
 
 export default function AnalyticsPanel({
@@ -15,7 +22,14 @@ export default function AnalyticsPanel({
   onRefund,
   onViewReceipt,
   products,
+  shifts,
+  currentRole,
+  onClockIn,
+  onClockOut,
+  onClearShifts,
+  onDeleteShift,
 }: AnalyticsPanelProps) {
+  const [activeSubTab, setActiveSubTab] = useState<'sales' | 'timeclock'>('sales');
   const [historySearch, setHistorySearch] = useState('');
 
   const handleExportCSV = () => {
@@ -138,19 +152,53 @@ export default function AnalyticsPanel({
           <p className="text-xs text-slate-500">Live cashier session sales review and inventory audits</p>
         </div>
 
+        {activeSubTab === 'sales' && (
+          <button
+            onClick={handleExportCSV}
+            disabled={orders.length === 0}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
+            id="export-sales-csv-btn"
+            title="Export total sales report ledger data as CSV file"
+          >
+            <Download className="h-4 w-4" />
+            Export Sales CSV
+          </button>
+        )}
+      </div>
+
+      {/* Sub Navigation Tabs */}
+      <div className="flex flex-wrap gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 w-fit self-start" id="analytics-subtabs-navigation">
         <button
-          onClick={handleExportCSV}
-          disabled={orders.length === 0}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
-          id="export-sales-csv-btn"
-          title="Export total sales report ledger data as CSV file"
+          onClick={() => setActiveSubTab('sales')}
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
+            activeSubTab === 'sales' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-850'
+          }`}
+          id="subnav-sales-reports"
         >
-          <Download className="h-4 w-4" />
-          Export Sales CSV
+          <BarChart3 className="h-3.5 w-3.5" />
+          Sales & KPI Reports
+        </button>
+        <button
+          onClick={() => setActiveSubTab('timeclock')}
+          className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all relative ${
+            activeSubTab === 'timeclock' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-850'
+          }`}
+          id="subnav-staff-timeclock"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Staff Time Clock
+          {shifts.some((s) => !s.endTime) && (
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
+          )}
+          {shifts.some((s) => !s.endTime) && (
+            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-indigo-650" />
+          )}
         </button>
       </div>
 
-      {/* KPI Cards Grid */}
+      {activeSubTab === 'sales' ? (
+        <>
+        {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* KPI: Gross Sales */}
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-xs">
@@ -442,6 +490,17 @@ export default function AnalyticsPanel({
           )}
         </div>
       </div>
+      </>
+      ) : (
+        <StaffTimeClock
+          shifts={shifts}
+          currentRole={currentRole}
+          onClockIn={onClockIn}
+          onClockOut={onClockOut}
+          onClearShifts={onClearShifts}
+          onDeleteShift={onDeleteShift}
+        />
+      )}
     </div>
   );
 }
