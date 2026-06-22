@@ -36,6 +36,7 @@ export default function ProductFormModal({
   const [icon, setIcon] = useState('☕');
   const [color, setColor] = useState(PRESET_COLORS[0].class);
   const [code, setCode] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   // When editingProduct changes, load values
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function ProductFormModal({
       setIcon(editingProduct.icon);
       setColor(editingProduct.color);
       setCode(editingProduct.code);
+      setImageUrl(editingProduct.imageUrl || '');
     } else {
       setName('');
       setPrice('');
@@ -58,6 +60,7 @@ export default function ProductFormModal({
       setColor(PRESET_COLORS[0].class);
       // Generate a random PLU if new
       setCode((Math.floor(1000 + Math.random() * 9000)).toString());
+      setImageUrl('');
     }
   }, [editingProduct, isOpen, categories]);
 
@@ -77,6 +80,7 @@ export default function ProductFormModal({
       icon,
       color,
       code: code || Math.floor(1000 + Math.random() * 9000).toString(),
+      imageUrl: imageUrl || undefined,
     });
     onClose();
   };
@@ -205,6 +209,22 @@ export default function ProductFormModal({
                     </option>
                   ))}
               </select>
+            </div>
+
+            {/* Image Pattern / URL */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>Image Pattern or URL Keyword</span>
+                <span className="text-[10px] text-indigo-500 font-mono normal-case">e.g. matcha-grid, croissant-swirl</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. matcha-grid, espresso-waves, or image URL"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 px-3.5 text-sm text-slate-800 placeholder-slate-400 transition-all focus:border-slate-400 focus:bg-white focus:outline-hidden"
+                id="prod-imageurl-input"
+              />
             </div>
 
             {/* Stock Level & Limit */}

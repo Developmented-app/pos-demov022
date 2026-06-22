@@ -8,6 +8,7 @@ export interface Product {
   color: string; // Tailwind background color prefix
   icon: string;  // Emoji or Lucide icon name representation
   code: string;  // PLU / Barcode representation
+  imageUrl?: string;
 }
 
 export interface Category {

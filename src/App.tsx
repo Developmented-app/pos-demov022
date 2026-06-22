@@ -8,7 +8,7 @@ import ReceiptModal from './components/ReceiptModal';
 import AnalyticsPanel from './components/AnalyticsPanel';
 import OnlineOrders from './components/OnlineOrders';
 import NotificationCenter from './components/NotificationCenter';
-import { Store, BarChart3, Clock, Coffee, Shield, RefreshCcw, Globe, Bell } from 'lucide-react';
+import { Store, BarChart3, Clock, Coffee, Shield, RefreshCcw, Globe, Bell, Wifi, WifiOff } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export default function App() {
@@ -77,6 +77,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'register' | 'online' | 'notifications' | 'analytics'>('register');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // --- Network Connection Detector State ---
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   // --- Modals Toggle states ---
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -207,6 +210,29 @@ export default function App() {
       }
     }
   };
+
+  // --- Network Connection Listeners ---
+  useEffect(() => {
+    const updateOnlineStatus = () => {
+      const online = navigator.onLine;
+      setIsOnline(online);
+      dispatchNotification(
+        'system',
+        online ? 'Live Server Online' : 'Offline Mode Active',
+        online
+          ? 'Network access has been restored. Local session data remains synced and secure.'
+          : 'Network access lost. Nordic Roastery POS is operating in secure offline-first local mode.'
+      );
+    };
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+
+    return () => {
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
+    };
+  }, []);
 
   const handleManualTriggerSim = (type: 'checkout' | 'cancel') => {
     if (type === 'checkout') {
@@ -717,10 +743,10 @@ export default function App() {
               </h1>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
                 </span>
-                <span className="text-[10px] font-semibold text-slate-500 font-mono">STATION #01 • LIVE</span>
+                <span className="text-[10px] font-bold text-slate-500 font-mono">STATION #01 • {isOnline ? 'LIVE' : 'LOCAL'}</span>
               </div>
             </div>
           </div>
@@ -781,6 +807,40 @@ export default function App() {
 
           {/* Clock & Action row */}
           <div className="flex items-center gap-4">
+            {/* Network Status Badge */}
+            <button
+              onClick={() => {
+                const newOnlineState = !isOnline;
+                setIsOnline(newOnlineState);
+                dispatchNotification(
+                  'system',
+                  newOnlineState ? 'Live Server Connected' : 'Offline Mode Activated',
+                  newOnlineState
+                    ? 'Network access has been manually toggled. Synchronization services are now operational or simulated.'
+                    : 'System entered offline-first sandbox mode. All order ticket transactions are preserved locally.'
+                );
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-extrabold font-mono tracking-tight border transition-all cursor-pointer ${
+                isOnline
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/40 hover:bg-emerald-100/70'
+                  : 'bg-amber-50 text-amber-700 border-amber-200/40 hover:bg-amber-100/70'
+              }`}
+              title={isOnline ? "Network: Online. Click to simulate Offline-first mode." : "Network: Offline-first Active. Click to simulate Online mode."}
+              id="network-status-toggle-btn"
+            >
+              {isOnline ? (
+                <>
+                  <Wifi className="h-3 w-3 text-emerald-500 shrink-0" />
+                  <span className="hidden select-none sm:inline">ONLINE</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3 text-amber-500 shrink-0 animate-pulse" />
+                  <span className="select-none text-red-700 uppercase">Offline Mode</span>
+                </>
+              )}
+            </button>
+
             <span className="text-xs text-slate-500 font-mono font-bold hidden sm:inline">
               {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>

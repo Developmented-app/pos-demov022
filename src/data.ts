@@ -20,6 +20,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-amber-50 border-amber-200 text-amber-900',
     icon: '☕',
     code: '1001',
+    imageUrl: 'espresso-waves',
   },
   {
     id: 'prod-2',
@@ -31,6 +32,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-amber-50 border-amber-200 text-amber-900',
     icon: '🥛',
     code: '1002',
+    imageUrl: 'oat-latte-stripes',
   },
   {
     id: 'prod-3',
@@ -42,6 +44,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-amber-50 border-amber-200 text-amber-900',
     icon: '🥤',
     code: '1003',
+    imageUrl: 'tonic-bubbles',
   },
   {
     id: 'prod-4',
@@ -53,6 +56,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-emerald-50 border-emerald-200 text-emerald-900',
     icon: '🍵',
     code: '2001',
+    imageUrl: 'matcha-grid',
   },
   {
     id: 'prod-5',
@@ -64,6 +68,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-emerald-50 border-emerald-200 text-emerald-900',
     icon: '🍃',
     code: '2002',
+    imageUrl: 'jasmine-spiral',
   },
   {
     id: 'prod-6',
@@ -75,6 +80,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-emerald-50 border-emerald-200 text-emerald-900',
     icon: '🌺',
     code: '2003',
+    imageUrl: 'hibiscus-blossom',
   },
   {
     id: 'prod-7',
@@ -86,6 +92,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-orange-50 border-orange-200 text-orange-900',
     icon: '🥐',
     code: '3001',
+    imageUrl: 'croissant-swirl',
   },
   {
     id: 'prod-8',
@@ -97,6 +104,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-orange-50 border-orange-200 text-orange-900',
     icon: '🥯',
     code: '3002',
+    imageUrl: 'bagel-seeds',
   },
   {
     id: 'prod-9',
@@ -108,6 +116,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-orange-50 border-orange-200 text-orange-900',
     icon: '🥧',
     code: '3003',
+    imageUrl: 'frangipane-tart',
   },
   {
     id: 'prod-10',
@@ -119,6 +128,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-lime-50 border-lime-200 text-lime-900',
     icon: '🥑',
     code: '4001',
+    imageUrl: 'avocado-grid',
   },
   {
     id: 'prod-11',
@@ -130,6 +140,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-lime-50 border-lime-200 text-lime-900',
     icon: '🥪',
     code: '4002',
+    imageUrl: 'salmon-mesh',
   },
   {
     id: 'prod-12',
@@ -141,6 +152,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-lime-50 border-lime-200 text-lime-900',
     icon: '🥗',
     code: '4003',
+    imageUrl: 'beet-salad-polka',
   },
   {
     id: 'prod-13',
@@ -152,6 +164,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-purple-50 border-purple-200 text-purple-900',
     icon: '🍪',
     code: '5001',
+    imageUrl: 'cookie-sparks',
   },
   {
     id: 'prod-14',
@@ -163,6 +176,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     color: 'bg-purple-50 border-purple-200 text-purple-900',
     icon: '🥛',
     code: '5002',
+    imageUrl: 'keepcup-circles',
   },
   {
     id: 'prod-15',
@@ -170,10 +184,11 @@ export const INITIAL_PRODUCTS: Product[] = [
     price: 19.50,
     category: 'merch',
     stock: 15,
-    maxStock: 15,
+maxStock: 15,
     color: 'bg-purple-50 border-purple-200 text-purple-900',
     icon: '🎒',
     code: '5003',
+    imageUrl: 'roaster-stripes',
   },
 ];
 
