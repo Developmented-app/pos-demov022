@@ -1,0 +1,6 @@
+{
+  "name": "Point of Sale System",
+  "description": "A highly polished, offline-first Point of Sale (POS) system featuring a real-time product search/filter catalog, interactive cart operations, simulated payment processing, custom product management, and beautiful sales analytics reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
