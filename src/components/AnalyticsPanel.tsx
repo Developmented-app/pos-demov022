@@ -2,6 +2,16 @@ import React, { useState } from 'react';
 import { Order, Product, Shift, UserRole } from '../types';
 import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download, CalendarDays } from 'lucide-react';
 import { motion } from 'motion/react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import StaffTimeClock from './StaffTimeClock';
 
 interface AnalyticsPanelProps {
@@ -31,6 +41,61 @@ export default function AnalyticsPanel({
 }: AnalyticsPanelProps) {
   const [activeSubTab, setActiveSubTab] = useState<'sales' | 'timeclock'>('sales');
   const [historySearch, setHistorySearch] = useState('');
+  const [dataMode, setDataMode] = useState<'real' | 'demo'>('real');
+
+  // --- Calculate Last 7 Days Sales Volume ---
+  const getLast7DaysData = () => {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dailyData: { dateKey: string; name: string; dateStr: string; volume: number; sales: number }[] = [];
+
+    // Initialize 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayName = days[d.getDay()];
+      const monthStr = d.toLocaleDateString([], { month: 'short' });
+      const dateNum = d.getDate();
+      
+      dailyData.push({
+        dateKey: d.toDateString(),
+        name: dayName,
+        dateStr: `${monthStr} ${dateNum}`,
+        volume: 0,
+        sales: 0
+      });
+    }
+
+    // Populate actual orders
+    orders.forEach((o) => {
+      if (o.status !== 'completed') return;
+      const oDate = new Date(o.timestamp);
+      const oKey = oDate.toDateString();
+      const match = dailyData.find((item) => item.dateKey === oKey);
+      if (match) {
+        match.volume += 1;
+        match.sales += o.total;
+      }
+    });
+
+    // Demo baseline dataset to show realistic data if no real orders have been made yet
+    const demoVolumes = [14, 18, 25, 22, 38, 48, 32];
+    const demoSales = [120.50, 162.00, 245.80, 210.00, 412.50, 524.00, 318.20];
+
+    return dailyData.map((day, idx) => {
+      const isRealEmpty = orders.filter(o => o.status === 'completed').length === 0;
+      const shouldUseDemo = dataMode === 'demo' || (isRealEmpty && dataMode === 'real');
+      
+      return {
+        ...day,
+        volume: shouldUseDemo ? demoVolumes[idx] + day.volume : day.volume,
+        sales: shouldUseDemo ? demoSales[idx] + day.sales : day.sales,
+        isDemoData: isRealEmpty || dataMode === 'demo'
+      };
+    });
+  };
+
+  const last7DaysData = getLast7DaysData();
+  const totalVolumeAcross7Days = last7DaysData.reduce((sum, d) => sum + d.volume, 0);
 
   const handleExportCSV = () => {
     // Generate CSV content formatted for standard accounting or Excel spreadsheet viewers
@@ -344,6 +409,124 @@ export default function AnalyticsPanel({
               );
             })}
           </div>
+        </div>
+      </div>
+
+      {/* 7-Day Sales Volume Activity (Recharts Bar Chart) */}
+      <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-xs" id="historical-analytics-recharts-card">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+          <div className="space-y-0.5">
+            <span className="text-[10px] uppercase font-black text-indigo-600 font-mono tracking-widest block">Volume Metrics</span>
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+              <CalendarDays className="h-4.5 w-4.5 text-slate-500" />
+              <span>7-Day Sales Activity & Order Ticket Volume</span>
+            </h3>
+          </div>
+
+          {/* Mode Switcher */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200 text-[10px] font-bold select-none h-fit">
+            <button
+              onClick={() => setDataMode('real')}
+              className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                dataMode === 'real' ? 'bg-white text-slate-900 shadow-3xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+              id="chart-mode-real"
+            >
+              Session Live
+            </button>
+            <button
+              onClick={() => setDataMode('demo')}
+              className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                dataMode === 'demo' ? 'bg-white text-slate-900 shadow-3xs' : 'text-slate-500 hover:text-slate-700'
+              }`}
+              id="chart-mode-demo"
+            >
+              Weekly Baseline
+            </button>
+          </div>
+        </div>
+
+        {/* Display subtitle notice for state */}
+        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-4 bg-slate-50/50 px-3.5 py-2 rounded-xl border border-slate-100 font-sans">
+          <span>
+            {last7DaysData[0]?.isDemoData ? (
+              <span className="text-indigo-600 font-semibold">ℹ️ No active sales yet in this session database. Showing combined standard coffee shop baseline metrics.</span>
+            ) : (
+              <span>Showing live ledger data tracked over the past 7 calendar days.</span>
+            )}
+          </span>
+          <span className="font-mono text-slate-500 font-semibold">
+            Count: <span className="text-slate-800 font-bold">{totalVolumeAcross7Days} order tickets</span>
+          </span>
+        </div>
+
+        {/* Bar Chart Space */}
+        <div className="h-64 w-full pt-1" id="recharts-bar-chart-container">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={last7DaysData}
+              margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+              barGap={0}
+            >
+              <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 600 }}
+                dy={6}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 10, fontWeight: 500 }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                cursor={{ fill: '#f8fafc', radius: 8 }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-slate-900 text-white rounded-xl p-3 shadow-lg border border-slate-800 text-xs space-y-1">
+                        <p className="font-bold font-sans text-[11px] text-slate-300">
+                          {data.dateStr} ({data.name})
+                        </p>
+                        <div className="h-px bg-slate-800 my-1" />
+                        <p className="font-medium text-slate-200 font-sans">
+                          🎫 Volume: <span className="font-mono font-bold text-indigo-400">{data.volume} checkouts</span>
+                        </p>
+                        <p className="font-medium text-[11px] text-slate-300 font-sans">
+                          💰 Total Sales: <span className="font-mono text-emerald-400 font-bold">${data.sales.toFixed(2)}</span>
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar
+                dataKey="volume"
+                name="Order Volume"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={48}
+              >
+                {last7DaysData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${entry.dateKey}-${index}`}
+                    fill="url(#barGradient)"
+                    className="hover:opacity-90 hover:filter hover:brightness-105 transition-all duration-300"
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
