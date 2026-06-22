@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Order, Product } from '../types';
-import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock } from 'lucide-react';
+import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface AnalyticsPanelProps {
@@ -17,6 +17,56 @@ export default function AnalyticsPanel({
   products,
 }: AnalyticsPanelProps) {
   const [historySearch, setHistorySearch] = useState('');
+
+  const handleExportCSV = () => {
+    // Generate CSV content formatted for standard accounting or Excel spreadsheet viewers
+    const headers = [
+      'Order ID',
+      'Date & Time',
+      'Cashier',
+      'Items Count',
+      'Itemized Summary',
+      'Subtotal ($)',
+      'Discount ($)',
+      'Tax ($)',
+      'Grand Total ($)',
+      'Payment Method',
+      'Status'
+    ];
+
+    const rows = orders.map((o) => {
+      const itemsSummary = o.items
+        .map((item) => `${item.name} (x${item.quantity})`)
+        .join(' | ');
+
+      return [
+        `#${o.orderNo}`,
+        `"${new Date(o.timestamp).toLocaleString().replace(/"/g, '""')}"`,
+        `"${o.cashier.replace(/"/g, '""')}"`,
+        o.items.reduce((sum, item) => sum + item.quantity, 0),
+        `"${itemsSummary.replace(/"/g, '""')}"`,
+        o.subtotal.toFixed(2),
+        o.discount.toFixed(2),
+        o.tax.toFixed(2),
+        o.total.toFixed(2),
+        o.paymentMethod.toUpperCase(),
+        o.status.toUpperCase()
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    
+    // Create direct browser download trigger
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Nordic_Roastery_POS_Sales_Report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Calculate high-level KPIs
   const activeOrders = orders.filter((o) => o.status === 'completed');
@@ -79,7 +129,7 @@ export default function AnalyticsPanel({
   return (
     <div className="space-y-6" id="analytics-panel">
       {/* Title */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold font-sans text-slate-800 tracking-tight flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-slate-600" />
@@ -87,6 +137,17 @@ export default function AnalyticsPanel({
           </h2>
           <p className="text-xs text-slate-500">Live cashier session sales review and inventory audits</p>
         </div>
+
+        <button
+          onClick={handleExportCSV}
+          disabled={orders.length === 0}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
+          id="export-sales-csv-btn"
+          title="Export total sales report ledger data as CSV file"
+        >
+          <Download className="h-4 w-4" />
+          Export Sales CSV
+        </button>
       </div>
 
       {/* KPI Cards Grid */}

@@ -812,6 +812,7 @@ export default function App() {
       <ReceiptModal
         isOpen={isReceiptModalOpen}
         order={activeReceipt}
+        onDispatchAlert={dispatchNotification}
         onClose={() => {
           setIsReceiptModalOpen(false);
           setActiveReceipt(null);
