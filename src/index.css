@@ -9,31 +9,133 @@
 @media print {
   body {
     background: #ffffff !important;
-    color: #000000 !important;
+    color: #0f172a !important;
+    font-family: "Inter", system-ui, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  
-  body * {
+
+  /* ==========================================================================
+     Scenario A: Printing thermal receipt (if #thermal-receipt exists in DOM)
+     ========================================================================== */
+  body:has(#thermal-receipt) * {
     visibility: hidden;
   }
   
-  #thermal-receipt, #thermal-receipt * {
-    visibility: visible;
+  body:has(#thermal-receipt) #thermal-receipt,
+  body:has(#thermal-receipt) #thermal-receipt * {
+    visibility: visible !important;
   }
   
-  #thermal-receipt {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
+  body:has(#thermal-receipt) #thermal-receipt {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 68mm !important; /* Standard receipt tape width */
     max-width: 100% !important;
     border: none !important;
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 16px !important;
+    padding: 12px !important;
     background: #ffffff !important;
   }
-  
+
+  /* ==========================================================================
+     Scenario B: Printing Analytics / Reports (otherwise)
+     ========================================================================== */
+  body:not(:has(#thermal-receipt)) {
+    background-color: #ffffff !important;
+  }
+
+  /* Hide high-level outer app shell components */
+  body:not(:has(#thermal-receipt)) header,
+  body:not(:has(#thermal-receipt)) footer,
+  body:not(:has(#thermal-receipt)) select,
+  body:not(:has(#thermal-receipt)) input,
+  body:not(:has(#thermal-receipt)) button,
+  body:not(:has(#thermal-receipt)) .lg\:col-span-4, /* Hide the Checkout Cart column entirely */
+  body:not(:has(#thermal-receipt)) #analytics-subtabs-navigation,
+  body:not(:has(#thermal-receipt)) #export-sales-csv-btn,
+  body:not(:has(#thermal-receipt)) #print-analytics-report-btn,
+  body:not(:has(#thermal-receipt)) #factory-reset-btn,
+  body:not(:has(#thermal-receipt)) #ledger-search-input,
+  body:not(:has(#thermal-receipt)) .relative.max-w-xs.w-full, /* search wrapper */
+  body:not(:has(#thermal-receipt)) .flex.items-center.bg-slate-100.p-0\.5, /* baseline toggle */
+  body:not(:has(#thermal-receipt)) #chart-mode-real,
+  body:not(:has(#thermal-receipt)) #chart-mode-demo,
+  body:not(:has(#thermal-receipt)) .text-indigo-650 {
+    display: none !important;
+  }
+
+  /* Force the Main Content column to expand to Full Width */
+  body:not(:has(#thermal-receipt)) .lg\:col-span-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Expand analytics report container */
+  body:not(:has(#thermal-receipt)) #analytics-panel {
+    display: block !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Flatten bento card styles for high-contract printouts */
+  body:not(:has(#thermal-receipt)) .rounded-2xl {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* KPI Grid formatting */
+  body:not(:has(#thermal-receipt)) .grid-cols-2 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* Format transaction tables cleanly with visible print grids */
+  body:not(:has(#thermal-receipt)) table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    color: #1e293b !important;
+  }
+
+  body:not(:has(#thermal-receipt)) th {
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+    padding: 8px 12px !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    text-transform: uppercase !important;
+  }
+
+  body:not(:has(#thermal-receipt)) td {
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 11px !important;
+  }
+
+  body:not(:has(#thermal-receipt)) tr {
+    page-break-inside: avoid !important;
+  }
+
+  /* Optimize charts and bars colors / borders for monochrome printers */
+  body:not(:has(#thermal-receipt)) .bg-slate-900 {
+    background-color: #1e293b !important;
+  }
+
+  body:not(:has(#thermal-receipt)) .bg-slate-100 {
+    background-color: #f1f5f9 !important;
+  }
+
+  /* Set page margin size specifically */
   @page {
+    size: letter portrait;
     margin: 1.5cm;
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Order, Product, Shift, UserRole } from '../types';
-import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download, CalendarDays } from 'lucide-react';
+import { TrendingUp, Coins, ShoppingBag, Receipt, Percent, RotateCcw, ArrowUpRight, Search, BarChart3, Clock, Download, CalendarDays, Printer } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
   BarChart,
@@ -218,16 +218,28 @@ export default function AnalyticsPanel({
         </div>
 
         {activeSubTab === 'sales' && (
-          <button
-            onClick={handleExportCSV}
-            disabled={orders.length === 0}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
-            id="export-sales-csv-btn"
-            title="Export total sales report ledger data as CSV file"
-          >
-            <Download className="h-4 w-4" />
-            Export Sales CSV
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              disabled={orders.length === 0}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
+              id="print-analytics-report-btn"
+              title="Print printer-friendly financial and shift report"
+            >
+              <Printer className="h-4 w-4 text-slate-650" />
+              Print Report
+            </button>
+            <button
+              onClick={handleExportCSV}
+              disabled={orders.length === 0}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold font-sans bg-slate-900 border border-slate-950 text-white hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-98 transition-all shadow-xs cursor-pointer select-none"
+              id="export-sales-csv-btn"
+              title="Export total sales report ledger data as CSV file"
+            >
+              <Download className="h-4 w-4" />
+              Export Sales CSV
+            </button>
+          </div>
         )}
       </div>
 
